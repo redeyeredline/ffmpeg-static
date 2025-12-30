@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
-# Build FFmpeg with NVIDIA support for Cliprr
-# Based on the local build-ffmpeg.sh script
+# Build FFmpeg with comprehensive hardware acceleration support for Cliprr
+# Includes: NVIDIA NVENC, Intel QSV, AMD AMF/VCE, VA-API, and CPU encoding
 FROM ubuntu:22.04 AS builder
 
 # Set environment variables
@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/usr/local/cuda/bin:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
-# Install build dependencies and CUDA
+# Install build dependencies, CUDA, Intel Media SDK, and VA-API
 RUN apt-get update && apt-get install -y \
     autoconf \
     automake \
@@ -38,6 +38,10 @@ RUN apt-get update && apt-get install -y \
     libx265-dev \
     libxml2-dev \
     libvpx-dev \
+    libva-dev \
+    libva-drm2-dev \
+    libva-x11-2-dev \
+    libdrm-dev \
     m4 \
     make \
     nasm \
@@ -67,7 +71,8 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
     tar -xf ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
     cd ffmpeg-${FFMPEG_VERSION}
 
-# Configure FFmpeg with NVENC support
+# Configure FFmpeg with comprehensive hardware acceleration support
+# NVIDIA NVENC, Intel QSV, AMD AMF, VA-API, and CPU encoding
 WORKDIR /tmp/ffmpeg-build/ffmpeg-${FFMPEG_VERSION}
 RUN ./configure \
     --prefix=/usr/local \
@@ -87,6 +92,9 @@ RUN ./configure \
     --enable-libvpx \
     --enable-libspeex \
     --enable-libxml2 \
+    --enable-vaapi \
+    --enable-libvpl \
+    --enable-amf \
     --enable-postproc \
     --enable-pthreads \
     --enable-shared \
@@ -118,7 +126,7 @@ RUN ldconfig
 # Final stage - minimal runtime image
 FROM ubuntu:22.04
 
-# Install minimal runtime dependencies
+# Install minimal runtime dependencies including VA-API and Intel Media drivers
 RUN apt-get update && apt-get install -y \
     libass9 \
     libbz2-1.0 \
@@ -143,6 +151,11 @@ RUN apt-get update && apt-get install -y \
     libx265-199 \
     libvorbisenc2 \
     libflac8 \
+    libva2 \
+    libva-drm2 \
+    libva-x11-2 \
+    libdrm2 \
+    intel-media-va-driver-non-free \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy FFmpeg and FFprobe from builder (with explicit verification)
@@ -172,5 +185,11 @@ RUN ffprobe -version | head -1
 RUN test -f /usr/local/bin/ffmpeg || (echo "ERROR: ffmpeg not found in final image" && exit 1)
 RUN test -f /usr/local/bin/ffprobe || (echo "ERROR: ffprobe not found in final image" && exit 1)
 
-# Test NVENC support
-RUN ffmpeg -hide_banner -encoders | grep nvenc || echo "NVENC not available in this build"
+# Test hardware acceleration support
+RUN echo "=== Testing Hardware Acceleration Support ===" && \
+    (ffmpeg -hide_banner -encoders | grep nvenc && echo "✓ NVENC available") || echo "✗ NVENC not available" && \
+    (ffmpeg -hide_banner -encoders | grep qsv && echo "✓ QSV available") || echo "✗ QSV not available" && \
+    (ffmpeg -hide_banner -encoders | grep amf && echo "✓ AMF available") || echo "✗ AMF not available" && \
+    (ffmpeg -hide_banner -encoders | grep vaapi && echo "✓ VA-API available") || echo "✗ VA-API not available" && \
+    (ffmpeg -hide_banner -encoders | grep libx264 && echo "✓ CPU H.264 (libx264) available") || echo "✗ libx264 not available" && \
+    (ffmpeg -hide_banner -encoders | grep libx265 && echo "✓ CPU H.265 (libx265) available") || echo "✗ libx265 not available"
