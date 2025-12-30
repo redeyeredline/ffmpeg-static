@@ -39,8 +39,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libvpx-dev \
     libva-dev \
-    libva-drm2-dev \
-    libva-x11-2-dev \
     libdrm-dev \
     m4 \
     make \
@@ -72,7 +70,8 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
     cd ffmpeg-${FFMPEG_VERSION}
 
 # Configure FFmpeg with comprehensive hardware acceleration support
-# NVIDIA NVENC, Intel QSV, AMD AMF, VA-API, and CPU encoding
+# NVIDIA NVENC, Intel QSV (via VA-API), AMD VCE (via VA-API), and CPU encoding
+# Note: libvpl and AMF require external SDKs not in Ubuntu repos, so we use VA-API for Intel/AMD
 WORKDIR /tmp/ffmpeg-build/ffmpeg-${FFMPEG_VERSION}
 RUN ./configure \
     --prefix=/usr/local \
@@ -93,8 +92,6 @@ RUN ./configure \
     --enable-libspeex \
     --enable-libxml2 \
     --enable-vaapi \
-    --enable-libvpl \
-    --enable-amf \
     --enable-postproc \
     --enable-pthreads \
     --enable-shared \
@@ -188,8 +185,6 @@ RUN test -f /usr/local/bin/ffprobe || (echo "ERROR: ffprobe not found in final i
 # Test hardware acceleration support
 RUN echo "=== Testing Hardware Acceleration Support ===" && \
     (ffmpeg -hide_banner -encoders | grep nvenc && echo "✓ NVENC available") || echo "✗ NVENC not available" && \
-    (ffmpeg -hide_banner -encoders | grep qsv && echo "✓ QSV available") || echo "✗ QSV not available" && \
-    (ffmpeg -hide_banner -encoders | grep amf && echo "✓ AMF available") || echo "✗ AMF not available" && \
-    (ffmpeg -hide_banner -encoders | grep vaapi && echo "✓ VA-API available") || echo "✗ VA-API not available" && \
+    (ffmpeg -hide_banner -encoders | grep vaapi && echo "✓ VA-API available (Intel QSV/AMD VCE)") || echo "✗ VA-API not available" && \
     (ffmpeg -hide_banner -encoders | grep libx264 && echo "✓ CPU H.264 (libx264) available") || echo "✗ libx264 not available" && \
     (ffmpeg -hide_banner -encoders | grep libx265 && echo "✓ CPU H.265 (libx265) available") || echo "✗ libx265 not available"
