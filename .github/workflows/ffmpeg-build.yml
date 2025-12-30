@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'docker/nvidia/Dockerfile'
+      - 'docker/base/Dockerfile'
       - '.github/workflows/ffmpeg-build.yml'
     branches: [ main, master ]
   workflow_dispatch:

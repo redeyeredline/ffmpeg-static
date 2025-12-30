@@ -75,73 +75,10 @@ RUN ./configure \
     --enable-libtheora \
     --enable-libvpx \
     --enable-libspeex \
-    --enable-libsamplerate \
-    --enable-libjansson \
     --enable-libxml2 \
-    --enable-libturbojpeg \
-    --enable-libwebp \
-    --enable-libopenh264 \
-    --enable-libkvazaar \
-    --enable-libfdk-aac \
-    --enable-libbs2b \
-    --enable-libcaca \
-    --enable-libcdio \
-    --enable-libcodec2 \
-    --enable-libdav1d \
-    --enable-libdc1394 \
-    --enable-libdrm \
-    --enable-libdvdnav \
-    --enable-libdvdread \
-    --enable-libflite \
-    --enable-libfontconfig \
-    --enable-libgme \
-    --enable-libgsm \
-    --enable-libharfbuzz \
-    --enable-libiec61883 \
-    --enable-libjack \
-    --enable-libmysofa \
-    --enable-libopencore-amrnb \
-    --enable-libopencore-amrwb \
-    --enable-libopenjpeg \
-    --enable-libopenmpt \
-    --enable-libplacebo \
-    --enable-libpulse \
-    --enable-librsvg \
-    --enable-librubberband \
-    --enable-libshine \
-    --enable-libsmbclient \
-    --enable-libsnappy \
-    --enable-libsoxr \
-    --enable-libsrt \
-    --enable-libtesseract \
-    --enable-libtwolame \
-    --enable-libvidstab \
-    --enable-libvo-amrwbenc \
-    --enable-libzimg \
-    --enable-libzmq \
-    --enable-libzvbi \
-    --enable-lv2 \
-    --enable-openal \
-    --enable-opencl \
-    --enable-opengl \
-    --enable-openssl \
     --enable-postproc \
     --enable-pthreads \
-    --enable-shared \
-    --enable-version3 \
-    --enable-vaapi \
-    --enable-libvpl \
-    --enable-libxavs2 \
-    --enable-libdavs2 \
-    --enable-libvmaf \
-    --enable-libvvenc \
-    --enable-libilbc \
-    --enable-libklvanc \
-    --enable-omx \
-    --enable-libsvtav1 \
-    --enable-librist \
-    --enable-libjxl \
-    --enable-libopenh264
+    --enable-shared
 
 # Build FFmpeg (this builds ffmpeg, ffprobe, ffplay, etc.)
 RUN make -j$(nproc)
@@ -168,7 +105,7 @@ RUN ldconfig
 # Final stage - minimal runtime image
 FROM ubuntu:22.04
 
-# Install minimal runtime dependencies
+# Install minimal runtime dependencies (matching what's actually needed)
 RUN apt-get update && apt-get install -y \
     libass9 \
     libbz2-1.0 \
@@ -185,67 +122,18 @@ RUN apt-get update && apt-get install -y \
     libsamplerate0 \
     libspeex1 \
     libtheora0 \
-    libturbojpeg0 \
     libvorbis0a \
     libx264-163 \
     libvpx7 \
     libxml2 \
     libz1 \
-    libcaca0 \
-    libcdio19 \
-    libcodec2-1.0 \
-    libdav1d6 \
-    libdc1394-25 \
-    libdrm2 \
-    libdvdnav4 \
-    libdvdread8 \
-    libflite1 \
-    libfontconfig1 \
-    libgme0 \
-    libgsm1 \
-    libharfbuzz0b \
-    libiec61883-0 \
-    libjack-jackd2-0 \
-    libmysofa1 \
-    libopencore-amrnb0 \
-    libopencore-amrwb0 \
-    libopenjp2-7 \
-    libopenmpt0 \
-    libplacebo12 \
-    libpulse0 \
-    librsvg2-2 \
-    librubberband2 \
-    libshine3 \
-    libsmbclient \
-    libsnappy1v5 \
-    libsoxr0 \
-    libsrt1.5-gnutls \
-    libtesseract4 \
-    libtwolame0 \
-    libvidstab1.1 \
-    libvo-amrwbenc0 \
-    libzimg2 \
-    libzmq5 \
-    libzvbi0 \
-    liblv2-0 \
-    libopenal1 \
-    libopengl0 \
-    libssl3 \
-    libvdpau1 \
+    libx265-199 \
+    libvorbisenc2 \
+    libflac8 \
     libva2 \
     libva-drm2 \
     libva-x11-2 \
     libva-glx2 \
-    libx264-163 \
-    libx265-199 \
-    libvpx7 \
-    libopus0 \
-    libvorbis0a \
-    libmp3lame0 \
-    libfdk-aac2 \
-    libflac8 \
-    libvorbisenc2 \
-    libvdpau1 \
     intel-media-va-driver-non-free \
     && rm -rf /var/lib/apt/lists/*
 

@@ -2,6 +2,7 @@
 
 # Build FFmpeg with comprehensive hardware acceleration support for Cliprr
 # Includes: NVIDIA NVENC, Intel QSV, AMD AMF/VCE, VA-API, and CPU encoding
+# Trigger workflow rebuild
 FROM ubuntu:22.04 AS builder
 
 # Set environment variables
